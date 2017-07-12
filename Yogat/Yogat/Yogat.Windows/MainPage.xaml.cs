@@ -11,21 +11,49 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using WindowsPreview.Kinect;
-using Windows.UI.Xaml.Media.Imaging;
+using System.ComponentModel;
+using Windows.Storage.Streams;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
+using Windows.UI.Xaml.Shapes;
+using Windows.UI;
+using KinectFace;
+using Microsoft.Kinect.Face;
+
+//lab 13
+using Windows.Storage.Pickers;
+using Windows.Graphics.Imaging;
+using Windows.Graphics.Display;
+using Windows.Storage;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Yogat
 {
-    public sealed partial class MainPage : Page
+    public enum DisplayFrameType
     {
+        Infrared,
+        Color,
+        Depth,
+        BodyMask,
+        BodyJoints,
+        BackgroundRemoved,
+        FaceOnColor,
+        FaceOnInfrared,
+        FaceGame
+    }
+
+    public sealed partial class MainPage : Page, INotifyPropertyChanged
+    {
+        private const DisplayFrameType DEFAULT_DISPLAYFRAMETYPE = DisplayFrameType.Infrared;
+
+
         // constants for pixel color conversion
 
-        /// <summary>
-        /// The highest value that can be returned in the InfraredFrame. It is cast to a float for readability in the visualization code.
-        /// </summary>
+        /// <summary> The highest value that can be returned in the InfraredFrame. It is cast to a float for readability in the visualization code.</summary>
         private const float InfraredSourceValueMaximum = (float)ushort.MaxValue;
 
         /// <summary>
@@ -34,9 +62,7 @@ namespace Yogat
         /// </summary>
         private const float InfraredOutputValueMinimum = 0.01f;
 
-        /// <summary>
-        /// The upper limit, post processing, of the infrared data that will render.
-        /// </summary>
+        /// <summary> The upper limit, post processing, of the infrared data that will render.</summary>
         private const float InfraredOutputValueMaximum = 1.0f;
 
         /// <summary>
@@ -67,6 +93,12 @@ namespace Yogat
         private InfraredFrameReader infraredFrameReader = null;
         private ushort[] infraredFrameData = null;
         private byte[] infraredPixels = null;
+
+        // gesture detection
+
+        /// <summary> List of gesture detectors, there will be one detector created for each potential body (max of 6) </summary>
+        private List<GestureDetector> gestureDetectorList = null;
+        public bool isTakingScreenshot = false;
 
         public MainPage()
         {
