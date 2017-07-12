@@ -33,19 +33,6 @@ using Windows.Storage;
 
 namespace Yogat
 {
-    public enum DisplayFrameType
-    {
-        Infrared,
-        Color,
-        Depth,
-        BodyMask,
-        BodyJoints,
-        BackgroundRemoved,
-        FaceOnColor,
-        FaceOnInfrared,
-        FaceGame
-    }
-
     public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
         private const DisplayFrameType DEFAULT_DISPLAYFRAMETYPE = DisplayFrameType.Infrared;
@@ -97,7 +84,8 @@ namespace Yogat
         // gesture detection
 
         /// <summary> List of gesture detectors, there will be one detector created for each potential body (max of 6) </summary>
-        private List<GestureDetector> gestureDetectorList = null;
+        // private List<GestureDetector> gestureDetectorList = null;
+        private GestureDetector gestureDetector = null;
         public bool isTakingScreenshot = false;
 
         public MainPage()
@@ -132,6 +120,14 @@ namespace Yogat
             this.kinectSensor.Open();
 
             this.InitializeComponent();
+
+            this.Loaded += MainPage_Loaded;
+
+			// just detecting one body, index 0
+			GestureResultView result = new GestureResultView(0, false, false, 0.0f);
+			GestureDetector detector = new GestureDetector(this.kinectSensor, result);
+			result.PropertyChanged += GestureResult_PropertyChanged;
+            this.gestureDetector = detector;
         }
 
         /// <summary>
@@ -170,11 +166,94 @@ namespace Yogat
             }
         }
 
-        /// <summary>
-        /// convert the infrared data, each an ushort (0 to 65535), to RGB-alpha values (0 to 255);
-        /// output the pixel colors to be rendered
-        /// </summary>
-        private void ConvertInfraredDataToPixels()
+        private void Reader_MultiSourceFrameArrived(MultiSourceFrameReader sender, MultiSourceFrameArrivedEventArgs e)
+        {
+            MultiSourceFrame multiSourceFrame = e.FrameReference.AcquireFrame();
+
+            // If the Frame has expired by the time we process this event, return.
+            if (multiSourceFrame == null)
+            {
+                return;
+            }
+
+            ColorFrame colorFrame = null;
+            InfraredFrame infraredFrame = null;
+            BodyFrame bodyFrame = null;
+            BodyIndexFrame bodyIndexFrame = null;
+            IBuffer bodyIndexFrameData = null;
+            // Com interface for unsafe byte manipulation
+            IBufferByteAccess bufferByteAccess = null;
+
+			using (bodyFrame = multiSourceFrame.BodyFrameReference.AcquireFrame())
+			{
+				RegisterGesture(bodyFrame);
+			}
+        }
+
+		void GestureResult_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			GestureResultView result = sender as GestureResultView;
+
+            this.GestureVisual.GestureConfidence.Text = result.Confidence;
+
+            System.Diagnostics.Debug.WriteLine("Result in  GestureResult_PropertyChanged:");
+            System.Diagnostics.Debug.WriteLine(result);
+		}
+
+		private void RegisterGesture(BodyFrame bodyFrame)
+		{
+			bool dataReceived = false;
+			Body[] bodies = null;
+
+
+			if (bodyFrame != null)
+			{
+				if (bodies == null)
+				{
+					// Creates an array of 6 bodies, which is the max number of bodies that Kinect can track simultaneously
+					bodies = new Body[bodyFrame.BodyCount];
+				}
+
+				// The first time GetAndRefreshBodyData is called, Kinect will allocate each Body in the array.
+				// As long as those body objects are not disposed and not set to null in the array,
+				// those body objects will be re-used.
+				bodyFrame.GetAndRefreshBodyData(bodies);
+				dataReceived = true;
+			}
+
+			if (dataReceived)
+			{
+				// We may have lost/acquired bodies, so update the corresponding gesture detectors
+				if (bodies != null)
+				{
+					// Loop through all bodies to see if any of the gesture detectors need to be updated
+					for (int i = 0; i < bodyFrame.BodyCount; ++i)
+					{
+						Body body = bodies[i];
+						ulong trackingId = body.TrackingId;
+
+                        // only having one gesture detector - only detecting one gesture
+
+						// If the current body TrackingId changed, update the corresponding gesture detector with the new value
+						if (trackingId != this.gestureDetector.TrackingId)
+						{
+							this.gestureDetector.TrackingId = trackingId;
+
+							// If the current body is tracked, unpause its detector to get VisualGestureBuilderFrameArrived events
+							// If the current body is not tracked, pause its detector so we don't waste resources trying to get invalid gesture results
+							this.gestureDetector.IsPaused = trackingId == 0;
+						}
+					}
+				}
+			}
+		}
+
+
+		/// <summary>
+		/// convert the infrared data, each an ushort (0 to 65535), to RGB-alpha values (0 to 255);
+		/// output the pixel colors to be rendered
+		/// </summary>
+		private void ConvertInfraredDataToPixels()
         {
             // Convert the infrared to RGB
             int colorPixelIndex = 0;

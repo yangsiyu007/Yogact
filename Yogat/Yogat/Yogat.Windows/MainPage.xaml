@@ -13,12 +13,17 @@
                 <RowDefinition Height="70"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="100"/>
+				<RowDefinition Height="100"/>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" 
                 Style="{StaticResource SubheaderTextBlockStyle}"
                        Text="Kinect For Windows 2"/>
             <Image x:Name="FrameDisplayImage" Grid.Row="1" 
                 Stretch="Uniform"/>
+			<TextBlock Grid.Row="2" x:Name="GestureName"
+				Text="Detecting pose..." />
+			<TextBlock Grid.Row="3" x:Name="GestureConfidence"
+				Text="Confidence: " />
         </Grid>
     </Grid>
 </Page>
