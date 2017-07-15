@@ -78,10 +78,7 @@ namespace Yogat
 
         // gesture detection
 
-        /// <summary> List of gesture detectors, there will be one detector created for each potential body (max of 6) </summary>
-        // private List<GestureDetector> gestureDetectorList = null;
-        private GestureDetector gestureDetector = null;
-        public bool isTakingScreenshot = false;
+        private MultiSourceFrameReader multiSourceFrameReader = null;
 
         //lab 13
         /// <summary> List of gesture detectors, there will be one detector created for each potential body (max of 6) </summary>
@@ -93,6 +90,10 @@ namespace Yogat
         {
             // select the default sensor; only one sensor is currently supported by the SDK
             this.kinectSensor = KinectSensor.GetDefault();
+
+            this.multiSourceFrameReader = this.kinectSensor.OpenMultiSourceFrameReader(FrameSourceTypes.Infrared | FrameSourceTypes.Color | FrameSourceTypes.Depth | FrameSourceTypes.BodyIndex | FrameSourceTypes.Body);
+
+            this.multiSourceFrameReader.MultiSourceFrameArrived += this.Reader_MultiSourceFrameArrived;
 
             // get the infraredFrameDescription from the InfraredFrameSource
             FrameDescription infraredFrameDescription =
@@ -122,11 +123,20 @@ namespace Yogat
 
             this.InitializeComponent();
 
-			// just detecting one body, index 0
-			GestureResultView result = new GestureResultView(0, false, false, 0.0f);
-			GestureDetector detector = new GestureDetector(this.kinectSensor, result);
-			result.PropertyChanged += GestureResult_PropertyChanged;
-            this.gestureDetector = detector;
+            //lab 13
+            // Initialize the gesture detection objects for our gestures
+            this.gestureDetectorList = new List<GestureDetector>();
+
+            //lab 13
+            // Create a gesture detector for each body (6 bodies => 6 detectors)
+            int maxBodies = 6; // this.kinectSensor.BodyFrameSource.BodyCount;
+            for (int i = 0; i < maxBodies; ++i)
+            {
+                GestureResultView result = new GestureResultView(i, false, false, 0.0f);
+                GestureDetector detector = new GestureDetector(this.kinectSensor, result);
+                result.PropertyChanged += GestureResult_PropertyChanged;
+                this.gestureDetectorList.Add(detector);
+            }
         }
 
         /// <summary>
@@ -185,6 +195,8 @@ namespace Yogat
 			{
 				RegisterGesture(bodyFrame);
 			}
+
+
         }
 
 		void GestureResult_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -203,53 +215,50 @@ namespace Yogat
             this.GestureConfidence.Text = result.Confidence.ToString();
         }
 
-		private void RegisterGesture(BodyFrame bodyFrame)
-		{
-			bool dataReceived = false;
-			Body[] bodies = null;
+        private void RegisterGesture(BodyFrame bodyFrame)
+        {
+            bool dataReceived = false;
+            Body[] bodies = null;
 
+            if (bodyFrame != null)
+            {
+                if (bodies == null)
+                {
+                    // Creates an array of 6 bodies, which is the max number of bodies that Kinect can track simultaneously
+                    bodies = new Body[bodyFrame.BodyCount];
+                }
 
-			if (bodyFrame != null)
-			{
-				if (bodies == null)
-				{
-					// Creates an array of 6 bodies, which is the max number of bodies that Kinect can track simultaneously
-					bodies = new Body[bodyFrame.BodyCount];
-				}
+                // The first time GetAndRefreshBodyData is called, Kinect will allocate each Body in the array.
+                // As long as those body objects are not disposed and not set to null in the array,
+                // those body objects will be re-used.
+                bodyFrame.GetAndRefreshBodyData(bodies);
+                dataReceived = true;
+            }
 
-				// The first time GetAndRefreshBodyData is called, Kinect will allocate each Body in the array.
-				// As long as those body objects are not disposed and not set to null in the array,
-				// those body objects will be re-used.
-				bodyFrame.GetAndRefreshBodyData(bodies);
-				dataReceived = true;
-			}
+            if (dataReceived)
+            {
+                // We may have lost/acquired bodies, so update the corresponding gesture detectors
+                if (bodies != null)
+                {
+                    // Loop through all bodies to see if any of the gesture detectors need to be updated
+                    for (int i = 0; i < bodyFrame.BodyCount; ++i)
+                    {
+                        Body body = bodies[i];
+                        ulong trackingId = body.TrackingId;
 
-			if (dataReceived)
-			{
-				// We may have lost/acquired bodies, so update the corresponding gesture detectors
-				if (bodies != null)
-				{
-					// Loop through all bodies to see if any of the gesture detectors need to be updated
-					for (int i = 0; i < bodyFrame.BodyCount; ++i)
-					{
-						Body body = bodies[i];
-						ulong trackingId = body.TrackingId;
+                        // If the current body TrackingId changed, update the corresponding gesture detector with the new value
+                        if (trackingId != this.gestureDetectorList[i].TrackingId)
+                        {
+                            this.gestureDetectorList[i].TrackingId = trackingId;
 
-                        // only having one gesture detector - only detecting one gesture
-
-						// If the current body TrackingId changed, update the corresponding gesture detector with the new value
-						if (trackingId != this.gestureDetector.TrackingId)
-						{
-							this.gestureDetector.TrackingId = trackingId;
-
-							// If the current body is tracked, unpause its detector to get VisualGestureBuilderFrameArrived events
-							// If the current body is not tracked, pause its detector so we don't waste resources trying to get invalid gesture results
-							this.gestureDetector.IsPaused = trackingId == 0;
-						}
-					}
-				}
-			}
-		}
+                            // If the current body is tracked, unpause its detector to get VisualGestureBuilderFrameArrived events
+                            // If the current body is not tracked, pause its detector so we don't waste resources trying to get invalid gesture results
+                            this.gestureDetectorList[i].IsPaused = trackingId == 0;
+                        }
+                    }
+                }
+            }
+        }
 
 
 		/// <summary>

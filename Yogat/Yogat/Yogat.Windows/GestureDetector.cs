@@ -24,7 +24,7 @@ namespace Yogat
 
         //important lab 13
         /// <summary> Path to the gesture database that was trained with VGB </summary>
-        private readonly string gestureDatabase = @"Database\Squat.gba";
+        private readonly string gestureDatabase = @"Database\Yogat-0711.gbd";
 
         //important lab 13
         /// <summary> Name of the discrete gesture in the database that we want to track </summary>
@@ -85,6 +85,12 @@ namespace Yogat
 
             using (VisualGestureBuilderDatabase database = new VisualGestureBuilderDatabase(this.gestureDatabase))
             {
+                
+                foreach (Gesture gesture in database.AvailableGestures)
+                {
+                    System.Diagnostics.Debug.WriteLine("GESTURE!");
+                }
+
                 this.vgbFrameSource.AddGestures(database.AvailableGestures);
             }
 
@@ -221,6 +227,8 @@ namespace Yogat
                                 if (result != null)
                                 {
                                     // update the GestureResultView object with new gesture result values
+                                    System.Diagnostics.Debug.WriteLine("----- about to update result, logging result");
+                                    System.Diagnostics.Debug.WriteLine(result);
                                     this.GestureResultView.UpdateGestureResult(true, result.Detected, result.Confidence, gesture.Name);
                                 }
                             }

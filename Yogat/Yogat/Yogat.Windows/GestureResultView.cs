@@ -167,6 +167,11 @@ namespace Yogat
         /// <param name="detectionConfidence">Confidence value for detection of the discrete gesture</param>
         public void UpdateGestureResult(bool isBodyTrackingIdValid, bool isGestureDetected, float detectionConfidence, string gestureName)
         {
+            System.Diagnostics.Debug.WriteLine("isGestureDetected:");
+            System.Diagnostics.Debug.WriteLine(isGestureDetected);
+            System.Diagnostics.Debug.WriteLine(detectionConfidence);
+            System.Diagnostics.Debug.WriteLine(gestureName);
+
             this.IsTracked = isBodyTrackingIdValid;
             this.Confidence = 0.0f;
 
@@ -180,6 +185,7 @@ namespace Yogat
 
                 if (this.Detected)
                 {
+                    System.Diagnostics.Debug.WriteLine("--- confidence and gesture name updated");
                     this.Confidence = detectionConfidence;
                     this.GestureName = gestureName;
                 }
