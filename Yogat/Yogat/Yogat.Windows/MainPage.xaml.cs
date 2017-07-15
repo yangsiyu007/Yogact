@@ -20,8 +20,6 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI;
-using KinectFace;
-using Microsoft.Kinect.Face;
 
 //lab 13
 using Windows.Storage.Pickers;
@@ -35,9 +33,6 @@ namespace Yogat
 {
     public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
-        private const DisplayFrameType DEFAULT_DISPLAYFRAMETYPE = DisplayFrameType.Infrared;
-
-
         // constants for pixel color conversion
 
         /// <summary> The highest value that can be returned in the InfraredFrame. It is cast to a float for readability in the visualization code.</summary>
@@ -88,6 +83,12 @@ namespace Yogat
         private GestureDetector gestureDetector = null;
         public bool isTakingScreenshot = false;
 
+        //lab 13
+        /// <summary> List of gesture detectors, there will be one detector created for each potential body (max of 6) </summary>
+        private List<GestureDetector> gestureDetectorList = null;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public MainPage()
         {
             // select the default sensor; only one sensor is currently supported by the SDK
@@ -120,8 +121,6 @@ namespace Yogat
             this.kinectSensor.Open();
 
             this.InitializeComponent();
-
-            this.Loaded += MainPage_Loaded;
 
 			// just detecting one body, index 0
 			GestureResultView result = new GestureResultView(0, false, false, 0.0f);
@@ -181,8 +180,6 @@ namespace Yogat
             BodyFrame bodyFrame = null;
             BodyIndexFrame bodyIndexFrame = null;
             IBuffer bodyIndexFrameData = null;
-            // Com interface for unsafe byte manipulation
-            IBufferByteAccess bufferByteAccess = null;
 
 			using (bodyFrame = multiSourceFrame.BodyFrameReference.AcquireFrame())
 			{
@@ -192,13 +189,19 @@ namespace Yogat
 
 		void GestureResult_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			GestureResultView result = sender as GestureResultView;
+            GestureResultView result = sender as GestureResultView;
 
-            this.GestureVisual.GestureConfidence.Text = result.Confidence;
+            if (result.Confidence > 0.1)
+            {
+                this.GestureName.Text = result.GestureName;
+            }
+            else
+            {
+                this.GestureName.Text = "__";
+            }
 
-            System.Diagnostics.Debug.WriteLine("Result in  GestureResult_PropertyChanged:");
-            System.Diagnostics.Debug.WriteLine(result);
-		}
+            this.GestureConfidence.Text = result.Confidence.ToString();
+        }
 
 		private void RegisterGesture(BodyFrame bodyFrame)
 		{

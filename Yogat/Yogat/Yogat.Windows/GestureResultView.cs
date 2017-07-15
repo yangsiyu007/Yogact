@@ -30,6 +30,9 @@ namespace Yogat
         /// <summary> Current confidence value reported by the discrete gesture </summary>
         private float confidence = 0.0f;
 
+        /// <summary> Current gesture name for discrete gesture </summary>
+        private string gestureName = "______";
+
         /// <summary> True, if the discrete gesture is currently being detected </summary>
         private bool detected = false;
 
@@ -136,13 +139,33 @@ namespace Yogat
             }
         }
 
+        /// <summary> 
+        /// Name of the detected gesture
+        /// </summary>
+        public string GestureName
+        {
+            get
+            {
+                return this.gestureName;
+            }
+
+            private set
+            {
+                if (this.gestureName != value)
+                {
+                    this.gestureName = value;
+                    this.NotifyPropertyChanged();
+                }
+            }
+        }
+
         /// <summary>
         /// Updates the values associated with the discrete gesture detection result
         /// </summary>
         /// <param name="isBodyTrackingIdValid">True, if the body associated with the GestureResultView object is still being tracked</param>
         /// <param name="isGestureDetected">True, if the discrete gesture is currently detected for the associated body</param>
         /// <param name="detectionConfidence">Confidence value for detection of the discrete gesture</param>
-        public void UpdateGestureResult(bool isBodyTrackingIdValid, bool isGestureDetected, float detectionConfidence)
+        public void UpdateGestureResult(bool isBodyTrackingIdValid, bool isGestureDetected, float detectionConfidence, string gestureName)
         {
             this.IsTracked = isBodyTrackingIdValid;
             this.Confidence = 0.0f;
@@ -158,6 +181,7 @@ namespace Yogat
                 if (this.Detected)
                 {
                     this.Confidence = detectionConfidence;
+                    this.GestureName = gestureName;
                 }
                 else
                 {

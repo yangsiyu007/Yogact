@@ -20,10 +20,10 @@
                        Text="Kinect For Windows 2"/>
             <Image x:Name="FrameDisplayImage" Grid.Row="1" 
                 Stretch="Uniform"/>
-			<TextBlock Grid.Row="2" x:Name="GestureName"
+            <TextBlock Grid.Row="2" x:Name="GestureName" FontSize="30"
 				Text="Detecting pose..." />
-			<TextBlock Grid.Row="3" x:Name="GestureConfidence"
-				Text="Confidence: " />
+            <TextBlock Grid.Row="3" x:Name="GestureConfidence" FontSize="30"
+				Text="Calculating confidence..." />
         </Grid>
     </Grid>
 </Page>

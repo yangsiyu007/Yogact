@@ -22,11 +22,13 @@ namespace Yogat
     {
         //public RoutedEventHandler GestureRecognized { get; set; }
 
+        //important lab 13
         /// <summary> Path to the gesture database that was trained with VGB </summary>
-        private readonly string gestureDatabase = @"Database\Squat.gbd";
+        private readonly string gestureDatabase = @"Database\Squat.gba";
 
+        //important lab 13
         /// <summary> Name of the discrete gesture in the database that we want to track </summary>
-        private readonly string squatGestureName = "Squat";
+        // private readonly string handsAboveHeadGestureName = "Squat";
 
         /// <summary> Gesture frame source which should be tied to a body tracking ID </summary>
         private VisualGestureBuilderFrameSource vgbFrameSource = null;
@@ -65,15 +67,27 @@ namespace Yogat
                 this.vgbFrameReader.FrameArrived += this.Reader_GestureFrameArrived;
             }
 
-            // load the gesture from the gesture database
+            // load the 'Seated' gesture from the gesture database
+
+            // we could load all available gestures in the database with a call to vgbFrameSource.AddGestures(database.AvailableGestures), 
+            // but for this program, we only want to track one discrete gesture from the database, so we'll load it by name
+            //foreach (Gesture gesture in database.AvailableGestures)
+            //{
+            //    if (gesture.Name.Equals(this.seatedGestureName))
+            //    {
+            //        this.vgbFrameSource.AddGesture(gesture);
+            //    }
+            //}
+
+            // load all available gestures in the database
+            //    this.vgbFrameSource.AddGestures(database.AvailableGestures);
+            //}
+
             using (VisualGestureBuilderDatabase database = new VisualGestureBuilderDatabase(this.gestureDatabase))
             {
-                // load all available gestures in the database with a call to vgbFrameSource.AddGestures(database.AvailableGestures), 
-                foreach (Gesture gesture in database.AvailableGestures)
-                {
-                    this.vgbFrameSource.AddGesture(gesture);
-                }
+                this.vgbFrameSource.AddGestures(database.AvailableGestures);
             }
+
         }
 
         /// <summary> Gets the GestureResultView object which stores the detector results for display in the UI </summary>
@@ -204,11 +218,10 @@ namespace Yogat
                             {
                                 DiscreteGestureResult result = null;
                                 discreteResults.TryGetValue(gesture, out result);
-
                                 if (result != null)
                                 {
                                     // update the GestureResultView object with new gesture result values
-                                    this.GestureResultView.UpdateGestureResult(true, result.Detected, result.Confidence);
+                                    this.GestureResultView.UpdateGestureResult(true, result.Detected, result.Confidence, gesture.Name);
                                 }
                             }
                         }
@@ -225,7 +238,7 @@ namespace Yogat
         private void Source_TrackingIdLost(object sender, TrackingIdLostEventArgs e)
         {
             // update the GestureResultView object to show the 'Not Tracked' image in the UI
-            this.GestureResultView.UpdateGestureResult(false, false, 0.0f);
+            this.GestureResultView.UpdateGestureResult(false, false, 0.0f, "_");
         }
     }
 }
