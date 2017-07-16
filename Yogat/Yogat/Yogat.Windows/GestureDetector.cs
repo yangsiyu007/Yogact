@@ -24,7 +24,7 @@ namespace Yogat
 
         //important lab 13
         /// <summary> Path to the gesture database that was trained with VGB </summary>
-        private readonly string gestureDatabase = @"Database\Squat.gba";
+        private readonly string gestureDatabase = @"Database\Yogat-0715.gbd";
 
         //important lab 13
         /// <summary> Name of the discrete gesture in the database that we want to track </summary>
