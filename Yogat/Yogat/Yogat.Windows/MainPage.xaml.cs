@@ -81,9 +81,14 @@ namespace Yogat
         private ushort[] infraredFrameData  = null;
         private byte[] infraredPixels = null;
 
-        // gesture detection
+        //Body Joints are drawn here
+        private Canvas drawingCanvas;
+        private CoordinateMapper coordinateMapper = null;
+        private BodiesManager bodiesManager = null;
 
+        // gesture detection
         private MultiSourceFrameReader multiSourceFrameReader = null;
+
 
         //lab 13
         /// <summary> List of gesture detectors, there will be one detector created for each potential body (max of 6) </summary>
@@ -95,6 +100,8 @@ namespace Yogat
         {
             // select the default sensor; only one sensor is currently supported by the SDK
             this.kinectSensor = KinectSensor.GetDefault();
+
+            this.coordinateMapper = this.kinectSensor.CoordinateMapper;
 
             this.multiSourceFrameReader = this.kinectSensor.OpenMultiSourceFrameReader(FrameSourceTypes.Infrared | FrameSourceTypes.Color | FrameSourceTypes.Depth | FrameSourceTypes.BodyIndex | FrameSourceTypes.Body);
 
@@ -152,9 +159,32 @@ namespace Yogat
 
         private void SetupDisplay()
         {
+            if (this.FrameDisplayImage != null)
+            {
+                this.FrameDisplayImage.Source = null;
+            }
+
+            this.BodyJointsGrid.Visibility = Visibility.Visible;
+
+            // for color video
             FrameDescription colorFrameDescription = this.kinectSensor.ColorFrameSource.FrameDescription;
             // create the bitmap to display
             this.bitmap = new WriteableBitmap(colorFrameDescription.Width, colorFrameDescription.Height);
+
+            FrameDescription depthFrameDescription = this.kinectSensor.DepthFrameSource.FrameDescription;
+            // instantiate a new Canvas
+            this.drawingCanvas = new Canvas();
+            // set the clip rectangle to prevent rendering outside the canvas
+            this.drawingCanvas.Clip = new RectangleGeometry();
+            this.drawingCanvas.Clip.Rect = new Rect(0.0, 0.0, this.BodyJointsGrid.Width, this.BodyJointsGrid.Height);
+            this.drawingCanvas.Width = this.BodyJointsGrid.Width;
+            this.drawingCanvas.Height = this.BodyJointsGrid.Height;
+            // reset the body joints grid
+            this.BodyJointsGrid.Visibility = Visibility.Visible;
+            this.BodyJointsGrid.Children.Clear();
+            // add canvas to DisplayGrid
+            this.BodyJointsGrid.Children.Add(this.drawingCanvas);
+            bodiesManager = new BodiesManager(this.coordinateMapper, this.drawingCanvas, this.kinectSensor.BodyFrameSource.BodyCount);
         }
 
         /// <summary>
@@ -218,12 +248,28 @@ namespace Yogat
                 }
             }
 
+            // Gesture detection and joints overlay=
             using (bodyFrame = reference.BodyFrameReference.AcquireFrame())
             {
                 RegisterGesture(bodyFrame);
+                ShowBodyJoints(bodyFrame);
+            }
+        }
+
+        private void ShowBodyJoints(BodyFrame bodyFrame)
+        {
+            Body[] bodies = new Body[this.kinectSensor.BodyFrameSource.BodyCount];
+            bool dataReceived = false;
+            if (bodyFrame != null)
+            {
+                bodyFrame.GetAndRefreshBodyData(bodies);
+                dataReceived = true;
             }
 
-
+            if (dataReceived)
+            {
+                this.bodiesManager.UpdateBodiesAndEdges(bodies);
+            }
         }
 
         private void ShowColorFrame(ColorFrame colorFrame)

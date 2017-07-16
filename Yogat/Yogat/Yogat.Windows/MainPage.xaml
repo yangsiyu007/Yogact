@@ -20,6 +20,10 @@
                        Text="Kinect For Windows 2"/>
             <Image x:Name="FrameDisplayImage" Grid.Row="1" 
                 Stretch="Uniform"/>
+            <Viewbox Grid.Row="1" HorizontalAlignment="Center">
+                <Grid x:Name="BodyJointsGrid" Background="Transparent" Width="512" Height="414"/>
+            </Viewbox>
+
             <TextBlock Grid.Row="2" x:Name="GestureName" FontSize="30"
 				Text="Detecting pose..." />
             <TextBlock Grid.Row="3" x:Name="GestureConfidence" FontSize="30"

@@ -115,6 +115,8 @@
     </SDKReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BodiesManager.cs" />
+    <Compile Include="BodyInfo.cs" />
     <Compile Include="GestureDetector.cs" />
     <Compile Include="GestureResultView.cs" />
     <Compile Include="MainPage.xaml.cs">
