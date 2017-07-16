@@ -129,9 +129,7 @@
     <Content Include="Database\Squat.gba">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Database\Yogat-0711.gbd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="packages.config" />
     <None Include="Yogat.Windows_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

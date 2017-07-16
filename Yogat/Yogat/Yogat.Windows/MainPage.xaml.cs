@@ -20,12 +20,17 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI;
+using Microsoft.Kinect;
 
 //lab 13
 using Windows.Storage.Pickers;
 using Windows.Graphics.Imaging;
 using Windows.Graphics.Display;
 using Windows.Storage;
+//using System.Windows.Controls;
+//using System.Windows.Media;
+//using System.Windows.Media.Imaging;
+//using System.Windows.Shapes;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -73,7 +78,7 @@ namespace Yogat
 
         // infra-red frame
         private InfraredFrameReader infraredFrameReader = null;
-        private ushort[] infraredFrameData = null;
+        private ushort[] infraredFrameData  = null;
         private byte[] infraredPixels = null;
 
         // gesture detection
@@ -95,33 +100,34 @@ namespace Yogat
 
             this.multiSourceFrameReader.MultiSourceFrameArrived += this.Reader_MultiSourceFrameArrived;
 
+
             // get the infraredFrameDescription from the InfraredFrameSource
-            FrameDescription infraredFrameDescription =
-                this.kinectSensor.InfraredFrameSource.FrameDescription;
+            // FrameDescription infraredFrameDescription = this.kinectSensor.InfraredFrameSource.FrameDescription;
 
             // reader for infrared frames
-            this.infraredFrameReader =
-                this.kinectSensor.InfraredFrameSource.OpenReader();
+            // this.infraredFrameReader = this.kinectSensor.InfraredFrameSource.OpenReader();
 
             // event handler for frame arrival
-            this.infraredFrameReader.FrameArrived += this.Reader_InfraredFrameArrived;
+            // this.infraredFrameReader.FrameArrived += this.Reader_InfraredFrameArrived;
 
             // intermediate storage for receiving frame data from the sensor
-            this.infraredFrameData =
-                new ushort[infraredFrameDescription.Width * infraredFrameDescription.Height];
-            
-            // intermediate storage for frame data converted to color pixels for display
-            this.infraredPixels =
-                new byte[infraredFrameDescription.Width * infraredFrameDescription.Height * BytesPerPixel];
+            //this.infraredFrameData =
+            //    new ushort[infraredFrameDescription.Width * infraredFrameDescription.Height];
 
-            // create the bitmap to display, which will replace the contents of an image in XAML
-            this.bitmap =
-                new WriteableBitmap(infraredFrameDescription.Width, infraredFrameDescription.Height);
+            //// intermediate storage for frame data converted to color pixels for display
+            //this.infraredPixels =
+            //    new byte[infraredFrameDescription.Width * infraredFrameDescription.Height * BytesPerPixel];
+
+            //// create the bitmap to display, which will replace the contents of an image in XAML
+            //this.bitmap =
+            //    new WriteableBitmap(infraredFrameDescription.Width, infraredFrameDescription.Height);
 
             // open the sensor
             this.kinectSensor.Open();
 
             this.InitializeComponent();
+
+            this.Loaded += MainPage_Loaded;
 
             //lab 13
             // Initialize the gesture detection objects for our gestures
@@ -139,68 +145,121 @@ namespace Yogat
             }
         }
 
+        void MainPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetupDisplay();
+        }
+
+        private void SetupDisplay()
+        {
+            FrameDescription colorFrameDescription = this.kinectSensor.ColorFrameSource.FrameDescription;
+            // create the bitmap to display
+            this.bitmap = new WriteableBitmap(colorFrameDescription.Width, colorFrameDescription.Height);
+        }
+
         /// <summary>
         /// this method extracts a single InfraredFrame from the FrameReference in the event args,
         /// checks that the frame is not null and its dimensions match the bitmap initialized
         /// </summary>
-        private void Reader_InfraredFrameArrived(object sender, InfraredFrameArrivedEventArgs e)
-        {
-            bool infraredFrameProcessed = false;
+            //private void Reader_InfraredFrameArrived(object sender, InfraredFrameArrivedEventArgs e)
+            //{
+            //    bool infraredFrameProcessed = false;
 
-            // InfraredFrame is IDisposable
-            using (InfraredFrame infraredFrame = e.FrameReference.AcquireFrame())
-            {
-                if (infraredFrame != null)
-                {
-                    FrameDescription infraredFrameDescription =infraredFrame.FrameDescription;
+            //    // InfraredFrame is IDisposable
+            //    using (InfraredFrame infraredFrame = e.FrameReference.AcquireFrame())
+            //    {
+            //        if (infraredFrame != null)
+            //        {
+            //            FrameDescription infraredFrameDescription = infraredFrame.FrameDescription;
 
-                    // verify data and write the new infrared frame data to the display bitmap
-                    if (((infraredFrameDescription.Width * infraredFrameDescription.Height) == this.infraredFrameData.Length) &&
-                        (infraredFrameDescription.Width == this.bitmap.PixelWidth) &&
-                        (infraredFrameDescription.Height == this.bitmap.PixelHeight))
-                    {
-                        // copy the infrared frame into the infraredFrameData array class variable which is used in the next stage
-                        infraredFrame.CopyFrameDataToArray(this.infraredFrameData);
+            //            // verify data and write the new infrared frame data to the display bitmap
+            //            if (((infraredFrameDescription.Width * infraredFrameDescription.Height) == this.infraredFrameData.Length) &&
+            //                (infraredFrameDescription.Width == this.bitmap.PixelWidth) &&
+            //                (infraredFrameDescription.Height == this.bitmap.PixelHeight))
+            //            {
+            //                // copy the infrared frame into the infraredFrameData array class variable which is used in the next stage
+            //                infraredFrame.CopyFrameDataToArray(this.infraredFrameData);
 
-                        infraredFrameProcessed = true;
-                    }
-                }
-            }
+            //                infraredFrameProcessed = true;
+            //            }
+            //        }
+            //    }
 
-            // if a frame is received successfully, convert and render
-            if (infraredFrameProcessed)
-            {
-                ConvertInfraredDataToPixels();
-                RenderPixelArray(this.infraredPixels);
-            }
-        }
+            //    // if a frame is received successfully, convert and render
+            //    if (infraredFrameProcessed)
+            //    {
+            //        ConvertInfraredDataToPixels();
+            //        RenderPixelArray(this.infraredPixels);
+            //    }
+            //}
 
         private void Reader_MultiSourceFrameArrived(MultiSourceFrameReader sender, MultiSourceFrameArrivedEventArgs e)
         {
-            MultiSourceFrame multiSourceFrame = e.FrameReference.AcquireFrame();
+            MultiSourceFrame reference = e.FrameReference.AcquireFrame();
 
             // If the Frame has expired by the time we process this event, return.
-            if (multiSourceFrame == null)
+            if (reference == null)
             {
                 return;
             }
 
             ColorFrame colorFrame = null;
-            InfraredFrame infraredFrame = null;
             BodyFrame bodyFrame = null;
-            BodyIndexFrame bodyIndexFrame = null;
-            IBuffer bodyIndexFrameData = null;
+            //InfraredFrame infraredFrame = null;
+            //BodyIndexFrame bodyIndexFrame = null;
+            //IBuffer bodyIndexFrameData = null;
 
-			using (bodyFrame = multiSourceFrame.BodyFrameReference.AcquireFrame())
-			{
-				RegisterGesture(bodyFrame);
-			}
+            // Open color frame
+            using (colorFrame= reference.ColorFrameReference.AcquireFrame())
+            {
+                if (colorFrame != null)
+                {
+                    ShowColorFrame(colorFrame);
+                }
+            }
+
+            using (bodyFrame = reference.BodyFrameReference.AcquireFrame())
+            {
+                RegisterGesture(bodyFrame);
+            }
 
 
         }
 
-		void GestureResult_PropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
+        private void ShowColorFrame(ColorFrame colorFrame)
+        {
+            bool colorFrameProcessed = false;
+
+            if (colorFrame != null)
+            {
+                FrameDescription colorFrameDescription = colorFrame.FrameDescription;
+
+                // verify data and write the new color frame data to the Writeable bitmap
+                if ((colorFrameDescription.Width == this.bitmap.PixelWidth) && (colorFrameDescription.Height == this.bitmap.PixelHeight))
+                {
+                    if (colorFrame.RawColorImageFormat == ColorImageFormat.Bgra)
+                    {
+                        colorFrame.CopyRawFrameDataToBuffer(this.bitmap.PixelBuffer);
+                    }
+                    else
+                    {
+                        colorFrame.CopyConvertedFrameDataToBuffer(this.bitmap.PixelBuffer, ColorImageFormat.Bgra);
+                    }
+
+                    colorFrameProcessed = true;
+                }
+            }
+
+            if (colorFrameProcessed)
+            {
+                this.bitmap.Invalidate();
+                FrameDisplayImage.Source = this.bitmap;
+            }
+        }
+
+
+        void GestureResult_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
             GestureResultView result = sender as GestureResultView;
 
             if (result.Confidence > 0.1)
@@ -261,49 +320,49 @@ namespace Yogat
         }
 
 
-		/// <summary>
-		/// convert the infrared data, each an ushort (0 to 65535), to RGB-alpha values (0 to 255);
-		/// output the pixel colors to be rendered
-		/// </summary>
-		private void ConvertInfraredDataToPixels()
-        {
-            // Convert the infrared to RGB
-            int colorPixelIndex = 0;
-            for (int i = 0; i < this.infraredFrameData.Length; ++i)
-            {
-                // normalize the incoming infrared data (ushort) to a float ranging from InfraredOutputValueMinimum
-                // to InfraredOutputValueMaximum] by
-
-                // 1. dividing the incoming value by the source maximum value
-                float intensityRatio = (float)this.infraredFrameData[i] / InfraredSourceValueMaximum;
-
-                // 2. dividing by the (average scene value * standard deviations)
-                intensityRatio /= InfraredSceneValueAverage * InfraredSceneStandardDeviations;
-
-                // 3. limiting the value to InfraredOutputValueMaximum
-                intensityRatio = Math.Min(InfraredOutputValueMaximum, intensityRatio);
-
-                // 4. limiting the lower value InfraredOutputValueMinimum
-                intensityRatio = Math.Max(InfraredOutputValueMinimum, intensityRatio);
-
-                // 5. converting the normalized value to a byte and using  the result as the RGB components required by the image
-                byte intensity = (byte)(intensityRatio * 255.0f);
-                this.infraredPixels[colorPixelIndex++] = intensity; //Blue
-                this.infraredPixels[colorPixelIndex++] = intensity; //Green
-                this.infraredPixels[colorPixelIndex++] = intensity; //Red
-                this.infraredPixels[colorPixelIndex++] = 255;       //Alpha - always opaque for now         
-            }
-        }
-    
         /// <summary>
-        /// get the pixels in the byte array into something xaml can use (a WritableBitmap which can be the source of an Image)
+        /// convert the infrared data, each an ushort (0 to 65535), to RGB-alpha values (0 to 255);
+        /// output the pixel colors to be rendered
         /// </summary>
-        /// <param name="pixels"></param>
-        private void RenderPixelArray(byte[] pixels)
-        {
-            pixels.CopyTo(this.bitmap.PixelBuffer);
-            this.bitmap.Invalidate();
-            FrameDisplayImage.Source = this.bitmap;
-        }
+        //private void ConvertInfraredDataToPixels()
+        //{
+        //    // Convert the infrared to RGB
+        //    int colorPixelIndex = 0;
+        //    for (int i = 0; i < this.infraredFrameData.Length; ++i)
+        //    {
+        //        // normalize the incoming infrared data (ushort) to a float ranging from InfraredOutputValueMinimum
+        //        // to InfraredOutputValueMaximum] by
+
+        //        // 1. dividing the incoming value by the source maximum value
+        //        float intensityRatio = (float)this.infraredFrameData[i] / InfraredSourceValueMaximum;
+
+        //        // 2. dividing by the (average scene value * standard deviations)
+        //        intensityRatio /= InfraredSceneValueAverage * InfraredSceneStandardDeviations;
+
+        //        // 3. limiting the value to InfraredOutputValueMaximum
+        //        intensityRatio = Math.Min(InfraredOutputValueMaximum, intensityRatio);
+
+        //        // 4. limiting the lower value InfraredOutputValueMinimum
+        //        intensityRatio = Math.Max(InfraredOutputValueMinimum, intensityRatio);
+
+        //        // 5. converting the normalized value to a byte and using  the result as the RGB components required by the image
+        //        byte intensity = (byte)(intensityRatio * 255.0f);
+        //        this.infraredPixels[colorPixelIndex++] = intensity; //Blue
+        //        this.infraredPixels[colorPixelIndex++] = intensity; //Green
+        //        this.infraredPixels[colorPixelIndex++] = intensity; //Red
+        //        this.infraredPixels[colorPixelIndex++] = 255;       //Alpha - always opaque for now         
+        //    }
+        //}
+
+        ///// <summary>
+        ///// get the pixels in the byte array into something xaml can use (a WritableBitmap which can be the source of an Image)
+        ///// </summary>
+        ///// <param name="pixels"></param>
+        //private void RenderPixelArray(byte[] pixels)
+        //{
+        //    pixels.CopyTo(this.bitmap.PixelBuffer);
+        //    this.bitmap.Invalidate();
+        //    FrameDisplayImage.Source = this.bitmap;
+        //}
     }
 }
