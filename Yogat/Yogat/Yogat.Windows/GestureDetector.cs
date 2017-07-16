@@ -227,8 +227,6 @@ namespace Yogat
                                 if (result != null)
                                 {
                                     // update the GestureResultView object with new gesture result values
-                                    System.Diagnostics.Debug.WriteLine("----- about to update result, logging result");
-                                    System.Diagnostics.Debug.WriteLine(result);
                                     this.GestureResultView.UpdateGestureResult(true, result.Detected, result.Confidence, gesture.Name);
                                 }
                             }
