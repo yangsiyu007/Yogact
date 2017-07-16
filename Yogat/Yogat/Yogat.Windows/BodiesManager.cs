@@ -102,12 +102,12 @@ namespace Yogat
             // populate body colors, one for each BodyIndex
             this.bodyColors = new List<Color>
             {
-                Colors.Red,
-                Colors.Orange,
-                Colors.Green,
-                Colors.Blue,
-                Colors.Indigo,
-                Colors.Violet
+                Colors.AliceBlue,
+                Colors.BlueViolet,
+                Colors.Salmon,
+                Colors.MediumVioletRed,
+                Colors.Honeydew,
+                Colors.SeaGreen
             };
 
             // sets total number of possible tracked bodies
