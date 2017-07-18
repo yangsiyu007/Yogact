@@ -251,8 +251,12 @@ namespace Yogat
             // Gesture detection and joints overlay=
             using (bodyFrame = reference.BodyFrameReference.AcquireFrame())
             {
-                RegisterGesture(bodyFrame);
-                ShowBodyJoints(bodyFrame);
+                if (bodyFrame != null)
+                {
+                    RegisterGesture(bodyFrame);
+                    ShowBodyJoints(bodyFrame);
+                    PrintJointAngles(bodyFrame);
+                }           
             }
         }
 
@@ -363,6 +367,19 @@ namespace Yogat
                     }
                 }
             }
+        }
+
+
+        private void PrintJointAngles(BodyFrame bodyFrame)
+        {
+            var bodies = new Body[bodyFrame.BodyCount];
+            bodyFrame.GetAndRefreshBodyData(bodies);
+            
+            foreach (var body in bodies)
+            {
+                SquatGestures obj = new SquatGestures(body);
+                Debug.WriteLine(obj.Report);
+            }         
         }
 
 
