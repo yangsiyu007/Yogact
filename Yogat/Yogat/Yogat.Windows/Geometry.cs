@@ -151,6 +151,14 @@ namespace Yogat
             Name = name;
         }
 
+        public double Degree
+        {
+            get
+            {
+                return Value / Math.PI * 180D;
+            }    
+        }
+
         public static Angle operator -(Angle a)
         {
             return new Angle(-a.Value, a.Name);

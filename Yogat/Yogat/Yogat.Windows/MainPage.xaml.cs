@@ -98,7 +98,7 @@ namespace Yogat
 
         public MainPage()
         {
-            // select the default sensor; only one sensor is currently supported by the SDK
+
             this.kinectSensor = KinectSensor.GetDefault();
 
             this.coordinateMapper = this.kinectSensor.CoordinateMapper;
@@ -191,37 +191,37 @@ namespace Yogat
         /// this method extracts a single InfraredFrame from the FrameReference in the event args,
         /// checks that the frame is not null and its dimensions match the bitmap initialized
         /// </summary>
-            //private void Reader_InfraredFrameArrived(object sender, InfraredFrameArrivedEventArgs e)
-            //{
-            //    bool infraredFrameProcessed = false;
+        //    private void Reader_InfraredFrameArrived(object sender, InfraredFrameArrivedEventArgs e)
+        //{
+        //    bool infraredFrameProcessed = false;
 
-            //    // InfraredFrame is IDisposable
-            //    using (InfraredFrame infraredFrame = e.FrameReference.AcquireFrame())
-            //    {
-            //        if (infraredFrame != null)
-            //        {
-            //            FrameDescription infraredFrameDescription = infraredFrame.FrameDescription;
+        //    // InfraredFrame is IDisposable
+        //    using (InfraredFrame infraredFrame = e.FrameReference.AcquireFrame())
+        //    {
+        //        if (infraredFrame != null)
+        //        {
+        //            FrameDescription infraredFrameDescription = infraredFrame.FrameDescription;
 
-            //            // verify data and write the new infrared frame data to the display bitmap
-            //            if (((infraredFrameDescription.Width * infraredFrameDescription.Height) == this.infraredFrameData.Length) &&
-            //                (infraredFrameDescription.Width == this.bitmap.PixelWidth) &&
-            //                (infraredFrameDescription.Height == this.bitmap.PixelHeight))
-            //            {
-            //                // copy the infrared frame into the infraredFrameData array class variable which is used in the next stage
-            //                infraredFrame.CopyFrameDataToArray(this.infraredFrameData);
+        //            // verify data and write the new infrared frame data to the display bitmap
+        //            if (((infraredFrameDescription.Width * infraredFrameDescription.Height) == this.infraredFrameData.Length) &&
+        //                (infraredFrameDescription.Width == this.bitmap.PixelWidth) &&
+        //                (infraredFrameDescription.Height == this.bitmap.PixelHeight))
+        //            {
+        //                // copy the infrared frame into the infraredFrameData array class variable which is used in the next stage
+        //                infraredFrame.CopyFrameDataToArray(this.infraredFrameData);
 
-            //                infraredFrameProcessed = true;
-            //            }
-            //        }
-            //    }
+        //                infraredFrameProcessed = true;
+        //            }
+        //        }
+        //    }
 
-            //    // if a frame is received successfully, convert and render
-            //    if (infraredFrameProcessed)
-            //    {
-            //        ConvertInfraredDataToPixels();
-            //        RenderPixelArray(this.infraredPixels);
-            //    }
-            //}
+        //    // if a frame is received successfully, convert and render
+        //    if (infraredFrameProcessed)
+        //    {
+        //        ConvertInfraredDataToPixels();
+        //        RenderPixelArray(this.infraredPixels);
+        //    }
+        //}
 
         private void Reader_MultiSourceFrameArrived(MultiSourceFrameReader sender, MultiSourceFrameArrivedEventArgs e)
         {
@@ -251,11 +251,22 @@ namespace Yogat
             // Gesture detection and joints overlay=
             using (bodyFrame = reference.BodyFrameReference.AcquireFrame())
             {
+
                 if (bodyFrame != null)
                 {
-                    RegisterGesture(bodyFrame);
-                    ShowBodyJoints(bodyFrame);
-                    PrintJointAngles(bodyFrame);
+
+                    var bodies = new Body[bodyFrame.BodyCount];
+                    bodyFrame.GetAndRefreshBodyData(bodies);
+
+                    foreach(Body body in bodies)
+                    {
+                        if (body.IsTracked)
+                        {
+                            RegisterGesture(bodyFrame);
+                            ShowBodyJoints(bodyFrame);
+                            PrintJointAngles(bodyFrame);
+                        }
+                    }
                 }           
             }
         }
@@ -377,11 +388,22 @@ namespace Yogat
             
             foreach (var body in bodies)
             {
-                SquatGestures obj = new SquatGestures(body);
-                Debug.WriteLine(obj.Report);
+                if (body.IsTracked)
+                {
+                    SquatGestures obj = new SquatGestures(body);
+
+                    this.JointAngle.Text = $"Right knee angle: { obj.RightKneeAngle.Degree }";
+                    this.JointPosition.Text = $"Right knee position: { obj.printPoint("Right knee position", obj.RightKneePosition) }";
+                    this.RightShinDeviation.Text = $"Right shin deviation: { obj.RightShimDeviation.Degree }";
+                    //Debug.WriteLine(obj.Report);
+                }
             }         
         }
 
+        private void JointAngle_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+
+        }
 
         /// <summary>
         /// convert the infrared data, each an ushort (0 to 65535), to RGB-alpha values (0 to 255);

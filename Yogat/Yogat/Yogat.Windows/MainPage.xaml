@@ -13,7 +13,7 @@
                 <RowDefinition Height="70"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="100"/>
-				<RowDefinition Height="100"/>
+                <RowDefinition Height="100"/>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" 
                 Style="{StaticResource SubheaderTextBlockStyle}"
@@ -25,9 +25,15 @@
             </Viewbox>
 
             <TextBlock Grid.Row="2" x:Name="GestureName" FontSize="30"
-				Text="Detecting pose..." />
-            <TextBlock Grid.Row="3" x:Name="GestureConfidence" FontSize="30"
-				Text="Calculating confidence..." />
+				Text="Detecting pose..." Margin="0,0,956,48" />
+            <TextBlock Grid.Row="2" x:Name="GestureConfidence" FontSize="30"
+				Text="Calculating confidence..." Margin="355,5,577,43" />
+            <TextBlock Grid.Row="3" x:Name="JointAngle" FontSize="20"
+                Text="Right knee angle" Margin="0,10,690,38" SelectionChanged="JointAngle_SelectionChanged" />
+            <TextBlock Grid.Row="3" x:Name="JointPosition" FontSize="20"
+                Text="Right knee position" Margin="641,10,10,38" />
+            <TextBlock Grid.Row="3" x:Name="RightShinDeviation" FontSize="20"
+                Text="Right shin deviation" Margin="0,62,690,-14" SelectionChanged="JointAngle_SelectionChanged" />
         </Grid>
     </Grid>
 </Page>
