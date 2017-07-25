@@ -17,7 +17,7 @@
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" 
                 Style="{StaticResource SubheaderTextBlockStyle}"
-                       Text="Kinect For Windows 2"/>
+                       Text="YOGACT"/>
             <Image x:Name="FrameDisplayImage" Grid.Row="1" 
                 Stretch="Uniform"/>
             <Viewbox Grid.Row="1" HorizontalAlignment="Center">
@@ -27,13 +27,15 @@
             <TextBlock Grid.Row="2" x:Name="GestureName" FontSize="30"
 				Text="Detecting pose..." Margin="0,0,956,48" />
             <TextBlock Grid.Row="2" x:Name="GestureConfidence" FontSize="30"
-				Text="Calculating confidence..." Margin="355,5,577,43" />
+				Text="Calculating confidence..." Margin="641,0,291,48" />
             <TextBlock Grid.Row="3" x:Name="JointAngle" FontSize="20"
-                Text="Right knee angle" Margin="0,10,690,38" SelectionChanged="JointAngle_SelectionChanged" />
-            <TextBlock Grid.Row="3" x:Name="JointPosition" FontSize="20"
-                Text="Right knee position" Margin="641,10,10,38" />
+                Text="Right knee angle" Margin="0,62,690,-14" />
+            <TextBlock Grid.Row="2" x:Name="Message2" FontSize="20"
+                Text="" Margin="641,82,10,66" Grid.RowSpan="2" />
             <TextBlock Grid.Row="3" x:Name="RightShinDeviation" FontSize="20"
-                Text="Right shin deviation" Margin="0,62,690,-14" SelectionChanged="JointAngle_SelectionChanged" />
+                Text="Right shin deviation" Margin="641,62,49,-14" />
+            <TextBlock Grid.Row="2" x:Name="Message1" FontSize="20"
+                Text="Starting excercising" Margin="0,82,690,66" Grid.RowSpan="2" />
         </Grid>
     </Grid>
 </Page>

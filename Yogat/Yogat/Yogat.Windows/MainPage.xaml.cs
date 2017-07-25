@@ -393,16 +393,64 @@ namespace Yogat
                     SquatGestures obj = new SquatGestures(body);
 
                     this.JointAngle.Text = $"Right knee angle: { obj.RightKneeAngle.Degree }";
-                    this.JointPosition.Text = $"Right knee position: { obj.printPoint("Right knee position", obj.RightKneePosition) }";
-                    this.RightShinDeviation.Text = $"Right shin deviation: { obj.RightShimDeviation.Degree }";
+                    // this.JointPosition.Text = $"Right knee position: { obj.printPoint("Right knee position", obj.RightKneePosition) }";
+                    this.RightShinDeviation.Text = $"Right shin deviation: { obj.RightShinDeviation.Degree }";
                     //Debug.WriteLine(obj.Report);
+
+                    this.ApplySquatRules(obj.RightKneeAngle.Degree, obj.RightShinDeviation.Degree);
                 }
             }         
         }
 
-        private void JointAngle_SelectionChanged(object sender, RoutedEventArgs e)
+        private const int WINDOW = 10;
+        private Queue<double> rightKneeAngleQueue = new Queue<double>();
+
+        private double rightKneeAngleMinCycle = 400.0; // minimum right knee angle in the last iteration
+
+        private void ApplySquatRules(double rightKneeAngle, double rightShinDeviation)
         {
 
+
+            var length = rightKneeAngleQueue.Count;
+            if (length < WINDOW)
+            {
+                rightKneeAngleQueue.Enqueue(rightKneeAngle);
+            } else
+            {
+                double minRightKneeAngle = rightKneeAngleQueue.Min();
+                Debug.WriteLine($"minRightKneeAngle: {minRightKneeAngle}");
+
+                if (minRightKneeAngle < rightKneeAngleMinCycle) rightKneeAngleMinCycle = minRightKneeAngle;
+
+                // if the user is standing now, update state values
+                if (rightKneeAngle > 150)
+                {
+                    rightKneeAngleMinCycle = 400.0;
+                    this.Message1.Text = "Begin";
+                }
+                // if user is raising
+                else if (rightKneeAngle > minRightKneeAngle)
+                {
+                    if (rightKneeAngleMinCycle > 95)
+                    {
+                        this.Message1.Text = "Squat lower next time!";
+                    } else if (rightKneeAngleMinCycle < 75)
+                    {
+                        this.Message1.Text = "You're squating too low.";
+                    } else 
+                    {
+                        this.Message1.Text = "Doing great!";
+                    }
+                } else
+                {
+                    // if the user is lowering
+                    this.Message1.Text = "Squat lower...";
+                } 
+
+                // update queue
+                rightKneeAngleQueue.Dequeue();
+                rightKneeAngleQueue.Enqueue(rightKneeAngle);
+            }
         }
 
         /// <summary>

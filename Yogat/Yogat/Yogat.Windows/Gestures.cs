@@ -22,7 +22,7 @@ namespace Yogat
     public class SquatGestures : AGesture
     {
         public Angle RightKneeAngle;
-        public Angle RightShimDeviation;
+        public Angle RightShinDeviation;
         public Angle LeftKneeAngle;
         public CameraSpacePoint RightKneePosition;
 
@@ -45,7 +45,7 @@ namespace Yogat
 
             //v0 = new Vector3(js[JointType.HipLeft].Position, js[JointType.KneeLeft].Position);
             //v1 = new Vector3(js[JointType.KneeLeft].Position, js[JointType.AnkleLeft].Position);
-            RightShimDeviation = new Angle(new Vector3(v1.X,v1.Y,0), new Vector3(0,-1,0), "RightShimDeviation");
+            RightShinDeviation = new Angle(new Vector3(v1.X,v1.Y,0), new Vector3(0,-1,0), "RightShinDeviation");
         }
 
         public string printPoint(string name, CameraSpacePoint HipRight)
