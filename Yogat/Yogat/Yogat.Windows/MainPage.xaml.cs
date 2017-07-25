@@ -407,10 +407,44 @@ namespace Yogat
 
         private double rightKneeAngleMinCycle = 400.0; // minimum right knee angle in the last iteration
 
+        // rating
+        private bool mistakeNotLowEnough = false;
+        private bool mistakeTooLow = false;
+        private bool mistakeShin = false;
+
+        private void ResetMistakes ()
+        {
+            mistakeNotLowEnough = mistakeTooLow = mistakeShin = false;
+        }
+
+        private void UpdateRatingDisplay()
+        {
+            int numStars = 5;
+            if (mistakeNotLowEnough)
+            {
+                numStars--;
+            }
+
+            if (mistakeTooLow)
+            {
+                numStars--;
+            }
+            
+            if (mistakeShin)
+            {
+                numStars--;
+            }
+
+            string rating = "";
+            for (int i = 0; i < numStars; i++)
+            {
+                rating += " *";
+            }
+            this.Rating.Text = rating;
+        }
+
         private void ApplySquatRules(double rightKneeAngle, double rightShinDeviation)
         {
-
-
             var length = rightKneeAngleQueue.Count;
             if (length < WINDOW)
             {
@@ -418,7 +452,6 @@ namespace Yogat
             } else
             {
                 double minRightKneeAngle = rightKneeAngleQueue.Min();
-                Debug.WriteLine($"minRightKneeAngle: {minRightKneeAngle}");
 
                 if (minRightKneeAngle < rightKneeAngleMinCycle) rightKneeAngleMinCycle = minRightKneeAngle;
 
@@ -427,6 +460,7 @@ namespace Yogat
                 {
                     rightKneeAngleMinCycle = 400.0;
                     this.Message1.Text = "Begin";
+                    this.ResetMistakes();
                 }
                 // if user is raising
                 else if (rightKneeAngle > minRightKneeAngle)
@@ -434,13 +468,18 @@ namespace Yogat
                     if (rightKneeAngleMinCycle > 95)
                     {
                         this.Message1.Text = "Squat lower next time!";
+                        this.mistakeNotLowEnough = true;
                     } else if (rightKneeAngleMinCycle < 75)
                     {
                         this.Message1.Text = "You're squating too low.";
+                        this.mistakeTooLow = true;
                     } else 
                     {
                         this.Message1.Text = "Doing great!";
                     }
+
+                    this.UpdateRatingDisplay();
+                    
                 } else
                 {
                     // if the user is lowering
@@ -450,8 +489,22 @@ namespace Yogat
                 // update queue
                 rightKneeAngleQueue.Dequeue();
                 rightKneeAngleQueue.Enqueue(rightKneeAngle);
+
+                // shin deviation is only corrected when right knee angle below 95
+                if (rightKneeAngle < 130)
+                {
+                    if (rightShinDeviation > 6)
+                    {
+                        this.Message2.Text = "Your shins are not straight";
+                        this.mistakeShin = true;
+                    }
+                } else
+                {
+                    this.Message2.Text = "";
+                }
             }
         }
+
 
         /// <summary>
         /// convert the infrared data, each an ushort (0 to 65535), to RGB-alpha values (0 to 255);

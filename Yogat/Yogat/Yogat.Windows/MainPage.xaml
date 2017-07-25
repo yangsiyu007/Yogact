@@ -27,7 +27,7 @@
             <TextBlock Grid.Row="2" x:Name="GestureName" FontSize="30"
 				Text="Detecting pose..." Margin="0,0,956,48" />
             <TextBlock Grid.Row="2" x:Name="GestureConfidence" FontSize="30"
-				Text="Calculating confidence..." Margin="641,0,291,48" />
+				Text="Calculating confidence..." Margin="296,0,636,48" />
             <TextBlock Grid.Row="3" x:Name="JointAngle" FontSize="20"
                 Text="Right knee angle" Margin="0,62,690,-14" />
             <TextBlock Grid.Row="2" x:Name="Message2" FontSize="20"
@@ -36,6 +36,8 @@
                 Text="Right shin deviation" Margin="641,62,49,-14" />
             <TextBlock Grid.Row="2" x:Name="Message1" FontSize="20"
                 Text="Starting excercising" Margin="0,82,690,66" Grid.RowSpan="2" />
+            <TextBlock Grid.Row="2" x:Name="Rating" FontSize="30"
+                Text="Rating: " Margin="856,0,76,48" />
         </Grid>
     </Grid>
 </Page>
