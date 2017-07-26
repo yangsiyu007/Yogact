@@ -13,31 +13,51 @@
                 <RowDefinition Height="70"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="100"/>
+                <RowDefinition Height="70"/>
                 <RowDefinition Height="100"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" 
-                Style="{StaticResource SubheaderTextBlockStyle}"
-                       Text="YOGACT"/>
+            <TextBlock Grid.Row="0"  FontSize="25"
+                       Text="NOT SQUAT! &#x9;A Hackathon project" Margin="0,0,0,28"/>
             <Image x:Name="FrameDisplayImage" Grid.Row="1" 
                 Stretch="Uniform"/>
             <Viewbox Grid.Row="1" HorizontalAlignment="Center">
                 <Grid x:Name="BodyJointsGrid" Background="Transparent" Width="512" Height="414"/>
             </Viewbox>
 
-            <TextBlock Grid.Row="2" x:Name="GestureName" FontSize="30"
-				Text="Detecting pose..." Margin="0,0,956,48" />
-            <TextBlock Grid.Row="2" x:Name="GestureConfidence" FontSize="30"
-				Text="Calculating confidence..." Margin="296,0,636,48" />
-            <TextBlock Grid.Row="3" x:Name="JointAngle" FontSize="20"
-                Text="Right knee angle" Margin="0,62,690,-14" />
-            <TextBlock Grid.Row="2" x:Name="Message2" FontSize="20"
-                Text="" Margin="641,82,10,66" Grid.RowSpan="2" />
-            <TextBlock Grid.Row="3" x:Name="RightShinDeviation" FontSize="20"
-                Text="Right shin deviation" Margin="641,62,49,-14" />
-            <TextBlock Grid.Row="2" x:Name="Message1" FontSize="20"
-                Text="Starting excercising" Margin="0,82,690,66" Grid.RowSpan="2" />
-            <TextBlock Grid.Row="2" x:Name="Rating" FontSize="30"
-                Text="Rating: " Margin="856,0,76,48" />
+            <Grid Margin="514,0,542,0" Grid.Row="3" HorizontalAlignment="Center" Width="250">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="50"/>
+                </Grid.ColumnDefinitions>
+                <Image x:Name="Star1" Margin="10 5" Grid.Column="0" Source="ms-appx:///Assets/star_icon_big.png" Grid.RowSpan="2" />
+                <Image x:Name="Star2" Margin="10 5" Grid.Column="1" Source="ms-appx:///Assets/star_icon_big.png" Grid.RowSpan="2" />
+                <Image x:Name="Star3" Margin="10 5" Grid.Column="2" Source="ms-appx:///Assets/star_icon_big.png" Grid.RowSpan="2" />
+                <Image x:Name="Star4" Margin="10 5" Grid.Column="3" Source="ms-appx:///Assets/star_icon_big.png" Grid.RowSpan="2" />
+                <Image x:Name="Star5" Margin="10 5" Grid.Column="4" Source="ms-appx:///Assets/star_icon_big.png" Grid.RowSpan="2" />
+                
+            </Grid>
+
+            <TextBlock Grid.Row="2" x:Name="GestureName" FontSize="50" HorizontalAlignment="Center"
+				Text="Detecting pose..." Margin="466,10,473,27" />
+            <!--<TextBlock Grid.Row="2" x:Name="GestureConfidence" FontSize="30"
+				Text="Calculating confidence..." Margin="382,0,550,48" />-->
+            <!--<TextBlock Grid.Row="3" x:Name="JointAngle" FontSize="20"
+                Text="Right knee angle" Margin="0,62,690,-14" />-->
+            <TextBlock Grid.Row="4" x:Name="Message2" FontSize="35" HorizontalAlignment="Center"
+                Text="" Margin="644,10,133,32" Width="529" />
+            <!--<TextBlock Grid.Row="3" x:Name="RightShinDeviation" FontSize="20"
+                Text="Right shin deviation" Margin="641,62,49,-14" />-->
+            <TextBlock Grid.Row="4" x:Name="Message1" FontSize="35" HorizontalAlignment="Center"
+                Text="Starting excercising" Margin="84,10,667,32" Width="555" />
+            <!--<TextBlock Grid.Row="3" x:Name="Rating" FontSize="30" HorizontalAlignment="Center"
+                Text="Rating: " Margin="444,38,770,10" />-->
         </Grid>
     </Grid>
 </Page>

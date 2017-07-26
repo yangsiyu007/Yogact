@@ -318,6 +318,7 @@ namespace Yogat
             }
         }
 
+        private bool isSquat = false;
 
         void GestureResult_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -326,13 +327,18 @@ namespace Yogat
             if (result.Confidence > 0.1)
             {
                 this.GestureName.Text = result.GestureName;
+                if (result.GestureName == "Squat")
+                {
+                    this.isSquat = true;
+                }
             }
             else
             {
-                this.GestureName.Text = "__";
+                this.GestureName.Text = "Not Squat";
+                this.isSquat = false;
             }
 
-            this.GestureConfidence.Text = result.Confidence.ToString();
+            //this.GestureConfidence.Text = result.Confidence.ToString();
         }
 
         private void RegisterGesture(BodyFrame bodyFrame)
@@ -392,9 +398,9 @@ namespace Yogat
                 {
                     SquatGestures obj = new SquatGestures(body);
 
-                    this.JointAngle.Text = $"Right knee angle: { obj.RightKneeAngle.Degree }";
+                    //this.JointAngle.Text = $"Right knee angle: { obj.RightKneeAngle.Degree }";
                     // this.JointPosition.Text = $"Right knee position: { obj.printPoint("Right knee position", obj.RightKneePosition) }";
-                    this.RightShinDeviation.Text = $"Right shin deviation: { obj.RightShinDeviation.Degree }";
+                    //this.RightShinDeviation.Text = $"Right shin deviation: { obj.RightShinDeviation.Degree }";
                     //Debug.WriteLine(obj.Report);
 
                     this.ApplySquatRules(obj.RightKneeAngle.Degree, obj.RightShinDeviation.Degree);
@@ -422,25 +428,44 @@ namespace Yogat
             int numStars = 5;
             if (mistakeNotLowEnough)
             {
-                numStars--;
+                numStars = numStars - 2;
             }
 
             if (mistakeTooLow)
             {
-                numStars--;
+                numStars = numStars - 2;
             }
             
             if (mistakeShin)
             {
-                numStars--;
+                numStars = numStars - 2;
             }
 
-            string rating = "";
-            for (int i = 0; i < numStars; i++)
+            this.Star1.Visibility = this.Star2.Visibility = this.Star3.Visibility = this.Star4.Visibility = this.Star5.Visibility = Visibility.Collapsed;
+            if (numStars < 1)
             {
-                rating += " *";
+                this.Star1.Visibility = Visibility.Visible;
             }
-            this.Rating.Text = rating;
+
+            if (numStars >= 1)
+            {
+                this.Star1.Visibility = Visibility.Visible;
+            }
+            if (numStars >= 3)
+            {
+                this.Star2.Visibility = this.Star3.Visibility = Visibility.Visible;
+            }
+            if (numStars == 5)
+            {
+                this.Star4.Visibility = this.Star5.Visibility = Visibility.Visible;
+            }
+
+            //string rating = "Rating: ";
+            //for (int i = 0; i < numStars; i++)
+            //{
+            //    rating += " *";
+            //}
+            //this.Rating.Text = rating;
         }
 
         private void ApplySquatRules(double rightKneeAngle, double rightShinDeviation)
@@ -459,23 +484,23 @@ namespace Yogat
                 if (rightKneeAngle > 150)
                 {
                     rightKneeAngleMinCycle = 400.0;
-                    this.Message1.Text = "Begin";
+                    this.Message1.Text = "Start squating";
                     this.ResetMistakes();
                 }
                 // if user is raising
                 else if (rightKneeAngle > minRightKneeAngle)
                 {
-                    if (rightKneeAngleMinCycle > 95)
+                    if (rightKneeAngleMinCycle > 85)
                     {
-                        this.Message1.Text = "Squat lower next time!";
+                        this.Message1.Text = (this.isSquat) ? "Squat lower next time!" : "";
                         this.mistakeNotLowEnough = true;
-                    } else if (rightKneeAngleMinCycle < 75)
+                    } else if (rightKneeAngleMinCycle < 65)
                     {
-                        this.Message1.Text = "You're squating too low.";
+                        this.Message1.Text = (this.isSquat) ?  "You're squating too low." : "";
                         this.mistakeTooLow = true;
                     } else 
                     {
-                        this.Message1.Text = "Doing great!";
+                        this.Message1.Text = (this.isSquat) ? "Doing great!" : "";
                     }
 
                     this.UpdateRatingDisplay();
@@ -483,7 +508,7 @@ namespace Yogat
                 } else
                 {
                     // if the user is lowering
-                    this.Message1.Text = "Squat lower...";
+                    this.Message1.Text = (this.isSquat) ?  "Squat lower..." : "";
                 } 
 
                 // update queue
@@ -495,7 +520,7 @@ namespace Yogat
                 {
                     if (rightShinDeviation > 6)
                     {
-                        this.Message2.Text = "Your shins are not straight";
+                        this.Message2.Text = (this.isSquat) ? "Your shins are not straight" : "";
                         this.mistakeShin = true;
                     }
                 } else
@@ -504,7 +529,6 @@ namespace Yogat
                 }
             }
         }
-
 
         /// <summary>
         /// convert the infrared data, each an ushort (0 to 65535), to RGB-alpha values (0 to 255);
